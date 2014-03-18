@@ -6,11 +6,11 @@
 	<meta name="format-detection" content="telephone=no" />
 	<!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
 	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
-	<link rel="stylesheet" type="text/css" href="css/ionic.min.css" />
 
+	<link rel="stylesheet" type="text/css" href="css/ionic.css" />
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script> 
+    <script type="text/javascript" charset="utf-8" src="scripts/ionic.bundle.js"></script> 
 	<title>Despritz</title>
-	<script type="text/javascript" charset="utf-8" src="cordova.js"></script> 
-	<script data-main="scripts/app" src="scripts/require.js"></script>
 
 	<style>
 		body {
@@ -34,12 +34,15 @@
 		}
 	</style>
 
+    <script>
+    </script>
+
     <script src="scripts/filechooser.js"></script>
     <script src="scripts/examples/fullscreen.js"></script>
 
 </head>
 
-<body class="ionic">
+<body ng-app="despritz" ng-controller="FileChooserController" class="ionic">
 	
 	<div class="bar bar-header bar-dark">
 		<h1 class="title">Despritz</h1>
@@ -48,15 +51,16 @@
 		<h1 class="title">a natural speedreader</h1>
 	</div>
 
-	<div id="content" class="content has-header has-subheader row">
-		<div class="col col-center">
-			<input type="file" id="file-input" />
+	<ion-content padding="true" has-header="true" has-subheader="true" has-footer="true">
+        <input type="file" id="file-input" />
 
-			<button id="choose-file-button" class="button button-block"><span class="icon ion-document-text"></span> Choose a file</button>
+        <button class="button button-block" ng-click="browse()"><span class="icon ion-document-text"></span> Choose a file</button>
 
-            <div id="folderName"></div>
-		</div>
-	</div>
+        <div id="filePath">{{filePath}}</div>
+        <ion-list>
+            <ion-item ng-repeat="file in files" ng-click="entry_selected(file)">{{file.name}}</ion-item>
+        </ion-list>
+	</ion-content>
 
 	<div class="bar bar-footer">
 		<button class="button button-clear">Menu</button>
