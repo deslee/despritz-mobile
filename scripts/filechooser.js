@@ -179,4 +179,8 @@ function FileChooserController($scope) {
 	  		}
 	  	}, false);
 	}
+
+	$scope.open_url = function(url) {
+		window.open(url, '_system');
+	}
 }

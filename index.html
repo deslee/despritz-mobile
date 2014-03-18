@@ -91,13 +91,16 @@
 
     <ion-side-menus>
       <!-- Center content -->
-      <ion-pane ion-side-menu-content>
+      <ion-pane ion-side-menu-content drag-content="chooseFileState">
       <div class="bar bar-header bar-dark">
         <button ng-click="toggleMenu()" class="button button-clear"><i class="icon ion-navicon"></i></button>
         <h1 class="title">Despritz</h1>
+
+        <button class="button button-clear" ng-click="toggleAbout()">About</button>
+
     </div>
     <div class="bar bar-subheader">
-        <h1 class="title">a natural speedreader</h1>
+        <h1 class="title">A natural speedreader.</h1>
     </div>
 
     <ion-content ng-if="chooseFileState" padding="true" has-header="true" has-subheader="true" has-footer="true">
@@ -143,23 +146,24 @@
 
     <div class="bar bar-footer">
         <div class="title"></div>
-        <button class="button button-clear">About</button>
+  <button class="button button-clear" ng-click="toggleAbout()">By Desmond Lee</button>
     </div>
 
       </ion-pane>
 
       <!-- Left menu -->
       <ion-side-menu side="left">
-      <button class="button button-block" ng-click="toggleAbout()">
-        About me
-      </button>
+        <ion-list>
+         <ion-item ng-click="browse()"><span class="icon ion-document-text"></span> Choose a file</ion-item>
+         <ion-item ng-click="toggleAbout()">About me</ion-item>
+        </ion-list>
       </ion-side-menu>
       <!-- r menu -->
       <ion-side-menu side="right">
-      http://deslee.me<br />
-      wheeeeee
-      <pre>
-        lipsum blah blah
+        <ion-list>
+         <ion-item>By Desmond Lee</ion-item>
+         <ion-item ng-click="open_url('http://deslee.me')">http://deslee.me</ion-item>
+        </ion-list>
     </pre>
       </ion-side-menu>
     </ion-side-menus>
