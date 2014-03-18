@@ -1,5 +1,3 @@
-
-
 var ng_module = angular.module('despritz', ['ionic']);
 
 function FileChooserController($scope) {
@@ -7,11 +5,16 @@ function FileChooserController($scope) {
 	app.initialize();
 	$scope.files = [];
 
+	$scope.debug = false;
+	$scope.chooseFileState = true;
+
 	window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
 	window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
 
+
 	$scope.browse = function(path) {
-		console.log(path);
+		$scope.chooseFileState = true;
+		$scope.$apply()
 		if ($scope.debug) {
 			$scope.files = [
 				{ 
@@ -27,36 +30,30 @@ function FileChooserController($scope) {
 					fullPath: 'bazbaz'
 				},
 			]
-			$scope.filePath = path || 'null';
 			return;
 		}
 
-		if (!path){
-			// get the local file system and pass the result to the success callback
-			window.requestFileSystem(window.PERSISTENT, 0, $scope.requestFileSystemSuccess, null);
-		} else {
-			alert(path);
-			window.resolveLocalFileSystemURI(path, 
-				function(filesystem){
-					// we must pass what the PhoneGap API doc examples call an "entry" to the reader
-					// which appears to take the form constructed below.
-					requestFileSystemSuccess({root:filesystem});
-				},
-				function(err){
-					// Eclipse doesn't let you inspect objects like Chrome does, thus the stringify
-					alert('### ERR: filesystem.beginBrowseForFiles() -' + (JSON.stringify(err)));
-				}
-			);
-		}
+		$scope.path = path;
+		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, $scope.requestFileSystemSuccess, null);
 	},
 
 	$scope.requestFileSystemSuccess = function(fileSystem) {
-		console.log('request filesystem success')
-		$scope._currentFileSystem = fileSystem;
-		$scope.filePath = fileSystem.root.fullPath || 'null';
+		if($scope.path) {
+			fileSystem.root.getDirectory($scope.path, {}, function(directoryEntry) {
+				$scope.switchDirectory(directoryEntry);
+				$scope.showUpOneLevel = true;
+			}, function(err) {
+				alert('ERROR ' + JSON.stringify(err));
+			})
+		}
+		else {
+			$scope.switchDirectory(fileSystem.root);
+		}
+	}
 
-		var directoryReader = fileSystem.root.createReader();
-		directoryReader.readEntries($scope.directoryReaderSuccess, $scope.fail);
+	$scope.switchDirectory = function(directoryEntry) {
+		$scope._current = directoryEntry;
+		directoryEntry.createReader().readEntries($scope.directoryReaderSuccess, $scope.fail);
 	}
 
 	$scope.directoryReaderSuccess = function(entries) {
@@ -71,12 +68,115 @@ function FileChooserController($scope) {
 
 	}
 
+	$scope.toggleMenu = function() {
+	  $scope.sideMenuController.toggleLeft();
+	};
+	$scope.toggleAbout = function() {
+	  $scope.sideMenuController.toggleRight();
+	};
+
+	$scope.doDirectoryUp = function() {
+		$scope._current.getParent(function(directoryEntry) {
+			$scope.switchDirectory(directoryEntry);
+			if (directoryEntry.fullPath == '/') {
+				$scope.showUpOneLevel = false;
+			}
+		}, function(err) {
+			alert('ERROR ' + JSON.stringify(err));
+		});
+	}
+
 	$scope.entry_selected = function(entry) {
-		alert('entry_selected')
 		if (entry.isDirectory) {
-			$scope.browse('file:///'+entry.fullPath);
+			$scope.browse(entry.fullPath.slice(1)); // slice off the backslash
 		}
 		else {
+			entry.file(function(file) {
+				var reader = new FileReader();
+				reader.onloadend = function(e) {
+					var txt = this.result;
+					$scope.result = txt;
+					$scope.chooseFileState = false;
+					$scope.finished()
+				};
+
+				reader.readAsText(file);
+			}, function(err) {
+				alert('ERROR ' + JSON.stringify(err));
+			});
 		}
+	}
+
+	$scope.finished = function() {
+		$scope.$apply()
+		var session = init_session(),
+			reticle = document.getElementById('reticle'),
+			before = document.getElementById('before'),
+			after = document.getElementById('after'),
+			seeker = document.getElementById('seeker');
+
+		s = session;
+		document.getElementById('start').onclick = function(e) {
+			e.preventDefault();
+			session.start();
+		}
+		document.getElementById('stop').onclick = function(e) {
+			e.preventDefault();
+			session.stop();
+		}
+
+		session.override('set_word', function(args, old) {
+			var session = this;
+			old.call(session, args);
+
+			var pivot_text = session.get_pivot_letter();
+
+			session.elements.box.style.left =
+				reticle.offsetLeft - pivot_text.offsetLeft - pivot_text.offsetWidth/2 + 'px'
+
+			seeker.value = session.index;
+		});
+
+		seeker.onchange = function(e) {
+			session.set_index(e.target.value);
+		}
+
+		document.getElementById('speed').onchange=function(e) {
+			session.wpm 
+				= document.getElementById('speed_number').innerHTML
+				= e.target.value;
+		};
+
+		session.elements.box = document.getElementById('box');
+
+		session.set_text($scope.result)
+		seeker.max = session.words.length;
+		session.update();
+
+		var body = document.getElementsByTagName('body')[0],
+		killEvents = function(evt) {
+			evt.stopPropagation();
+			evt.preventDefault();
+		}, fileSelect = document.getElementById('file');
+
+		['draginit','dragstart','dragover','dragleave','dragenter','dragend','drag','drop'].forEach(function(e){
+	  		body.addEventListener(e, killEvents);
+	  	})
+
+	  	body.addEventListener('dragenter', function(e) {
+	  	}, false);
+
+	  	body.addEventListener('drop', function(e) {
+	  		var file = e.dataTransfer.files[0],
+	  		reader = new FileReader();
+
+	  		var text = reader.readAsText(file);
+	  		reader.onloadend = function(e) {
+	  			var text = e.target.result;
+	  			session.set_text(text);
+	  			session.set_index(0);
+	  			session.start();
+	  		}
+	  	}, false);
 	}
 }

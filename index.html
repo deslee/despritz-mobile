@@ -32,41 +32,138 @@
 		#file-input {
 			display: none;
 		}
+
+
+        #text {
+            display: none;
+        }
+        #spritz {
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+        }
+        #reticle {
+            text-align: center;
+            display: inline-block;
+            height: 0px;
+        }
+        #box {
+            position: relative;
+            left: 0px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 3em;
+            font-family: "Inconsolata", Andale Mono, Monaco, Monospace;
+        }
+
+        .gui-control {
+        }
+        #seeker {
+            width: 100%;
+        }
+        .pivot.letter {
+            color: red;
+        }
+
+        #spritz .button, #box {
+            color: #A33D47; !important
+        }
+        #spritz .button {
+            border-color: #A33D47;
+            margin: 0 5px;
+        }
 	</style>
 
     <script>
     </script>
+    <script src="scripts/despritz.js"></script>
 
     <script src="scripts/filechooser.js"></script>
     <script src="scripts/examples/fullscreen.js"></script>
+
+
 
 </head>
 
 <body ng-app="despritz" ng-controller="FileChooserController" class="ionic">
 	
-	<div class="bar bar-header bar-dark">
-		<h1 class="title">Despritz</h1>
-	</div>
-	<div class="bar bar-subheader">
-		<h1 class="title">a natural speedreader</h1>
-	</div>
+	
 
-	<ion-content padding="true" has-header="true" has-subheader="true" has-footer="true">
+    <ion-side-menus>
+      <!-- Center content -->
+      <ion-pane ion-side-menu-content>
+      <div class="bar bar-header bar-dark">
+        <button ng-click="toggleMenu()" class="button button-clear"><i class="icon ion-navicon"></i></button>
+        <h1 class="title">Despritz</h1>
+    </div>
+    <div class="bar bar-subheader">
+        <h1 class="title">a natural speedreader</h1>
+    </div>
+
+    <ion-content ng-if="chooseFileState" padding="true" has-header="true" has-subheader="true" has-footer="true">
         <input type="file" id="file-input" />
 
-        <button class="button button-block" ng-click="browse()"><span class="icon ion-document-text"></span> Choose a file</button>
+        <button ng-if="!_current" class="button button-block" ng-click="browse()"><span class="icon ion-document-text"></span> Choose a file</button>
 
-        <div id="filePath">{{filePath}}</div>
+        <div id="filePath">{{_current.fullPath}}</div>
+
         <ion-list>
+            <ion-item ng-if="showUpOneLevel" ng-click="doDirectoryUp()">Up one level</ion-item>
             <ion-item ng-repeat="file in files" ng-click="entry_selected(file)">{{file.name}}</ion-item>
         </ion-list>
-	</ion-content>
+    </ion-content>
 
-	<div class="bar bar-footer">
-		<button class="button button-clear">Menu</button>
-		<div class="title">Title</div>
-		<button class="button button-clear">About</button>
-	</div>
+
+    <ion-content ng-if="!chooseFileState" scroll="false" padding="true" has-header="true" has-subheader="true" has-footer="true">
+
+        <div id="spritz">
+            <span id="reticle">&nbsp;</span>
+            <div class="gui-current">
+                <span id="box">&nbsp;</span>
+            </div>
+            <form class="gui-control">
+                <input id="seeker" data-role="slider" name="seeker" type="range" data-highlight="true" min="0" max="100" value="0"></input>
+                <div>
+                    <button class="button button-outline" id="start">start</button><button class="button button-outline" id="stop">pause</button><button class="button button-outline" ng-click="browse()"><span class="icon ion-document-text"></span> Choose a file</button>
+                </div>
+                <div>
+                Speed:
+                <input id="speed" type="range" min="200" max="500" step="50", value="200"><span id="speed_number">200</span>
+                </div>
+            </form>
+    <button ng-click='finished()' ng-if="debug">DEBUG</button>
+        </div>
+
+
+        <div id="text">hello world blah blahb al e ief aof ja aoif awjio aw owjia aw iojaw awod ijwad aw aow a aw oajiw aw aw aioj</div>
+        
+    </ion-content>
+
+
+
+    <div class="bar bar-footer">
+        <div class="title"></div>
+        <button class="button button-clear">About</button>
+    </div>
+
+      </ion-pane>
+
+      <!-- Left menu -->
+      <ion-side-menu side="left">
+      <button class="button button-block" ng-click="toggleAbout()">
+        About me
+      </button>
+      </ion-side-menu>
+      <!-- r menu -->
+      <ion-side-menu side="right">
+      http://deslee.me<br />
+      wheeeeee
+      <pre>
+        lipsum blah blah
+    </pre>
+      </ion-side-menu>
+    </ion-side-menus>
+
 
 </body>
 
